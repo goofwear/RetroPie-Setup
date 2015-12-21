@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -18,7 +19,7 @@ function depends_dosbox() {
 }
 
 function sources_dosbox() {
-    wget -O- -q http://downloads.petrockblock.com/retropiearchives/dosbox-r3876.tar.gz | tar -xvz --strip-components=1
+    wget -O- -q $__archive_url/dosbox-r3876.tar.gz | tar -xvz --strip-components=1
 }
 
 function build_dosbox() {
@@ -48,28 +49,21 @@ function configure_dosbox() {
     rm -f "$romdir/pc/Start DOSBox.sh"
     cat > "$romdir/pc/+Start DOSBox.sh" << _EOF_
 #!/bin/bash
-params="\$1"
-if [[ "\$params" =~ "+Start DOSBox.sh" ]]; then
-    params="-c \"MOUNT C $romdir/pc\""
-elif [[ "\$params" =~ \.sh$ ]]; then
-    bash "\$params"
+params=("\$@")
+if [[ -z "\${params[0]}" ]]; then
+    params=(-c "MOUNT C $romdir/pc")
+elif [[ "\${params[0]}" == *.sh ]]; then
+    bash "\${params[@]}"
     exit
 else
-    params+=" -exit"
+    params+=(-exit)
 fi
-$rootdir/supplementary/runcommand/runcommand.sh 0 "$md_inst/bin/dosbox \$params" "$md_id"
+"$md_inst/bin/dosbox" "\${params[@]}"
 _EOF_
     chmod +x "$romdir/pc/+Start DOSBox.sh"
     chown $user:$user "$romdir/pc/+Start DOSBox.sh"
 
-    mkUserDir "$configdir/pc/"
-
-    # move any old configs to the new location
-    if [[ -d "$home/.dosbox" && ! -h "$home/.dosbox" ]]; then
-        mv "$home/.dosbox/"* "$configdir/pc/"
-        rmdir "$home/.dosbox"
-    fi
-    ln -snf "$configdir/pc" "$home/.dosbox"
+    moveConfigDir "$home/.dosbox" "$configdir/pc"
 
     local config_path=$(su "$user" -c "\"$md_inst/bin/dosbox\" -printconf")
     if [[ -f "$config_path" ]]; then
@@ -80,11 +74,6 @@ _EOF_
         iniSet "scaler" "none"
     fi
 
-    # slight hack so that we set dosbox as the default emulator for "+Start DOSBox.sh"
-    iniConfig "=" '"' "$configdir/all/emulators.cfg"
-    iniSet "ab19770b84adcb74b0044f78b79000379" "dosbox"
-    chown $user:$user "$configdir/all/emulators.cfg"
-
-    addSystem 1 "$md_id" "pc" "$romdir/pc/+Start\ DOSBox.sh %ROM%" "" ".sh"
+    addSystem 1 "$md_id" "pc" "$romdir/pc/+Start\ DOSBox.sh %ROM%"
 }
 

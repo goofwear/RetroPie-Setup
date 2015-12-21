@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -48,14 +49,12 @@ function configure_mame4all() {
     mkdir -p "$configdir/$system/"{cfg,hi,inp,memcard,nvram,snap,sta}
 
     # move old config
-    if [[ -f "mame.cfg" && ! -h "mame.cfg" ]]; then
-        mv "mame.cfg" "$configdir/$system/mame.cfg"
-    fi
+    moveConfigFile "mame.cfg" "$configdir/$system/mame.cfg"
+
     # if the user doesn't already have a config, we will copy the default.
     if [[ ! -f "$configdir/$system/mame.cfg" ]]; then
         cp "mame.cfg.template" "$configdir/$system/mame.cfg"
     fi
-    ln -sf "$configdir/$system/mame.cfg"
 
     iniConfig "=" "" "$configdir/$system/mame.cfg"
     iniSet "cfg" "$configdir/$system/cfg"

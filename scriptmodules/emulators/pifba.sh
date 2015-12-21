@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -49,14 +50,12 @@ function configure_pifba() {
     local config
     for config in fba2x.cfg capex.cfg; do
         # move old config
-        if [[ -f "$config" && ! -h "$config" ]]; then
-            mv "$config" "$configdir/fba/$config"
-        fi
+        moveConfigFile "$md_inst/$config" "$configdir/fba/$config"
+
         # if the user doesn't already have a config, we will copy the default.
         if [[ ! -f "$configdir/fba/$config" ]]; then
             cp "$config.template" "$configdir/fba/$config"
         fi
-        ln -sf "$configdir/fba/$config"
         chown $user:$user "$configdir/fba/$config"
     done
 

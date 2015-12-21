@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -31,7 +32,7 @@ function build_lr-mame2003() {
 
 function install_lr-mame2003() {
     md_ret_files=(
-        'mame078_libretro.so'
+        'mame2003_libretro.so'
         'README'
         'changed.txt'
         'whatsnew.txt'
@@ -40,8 +41,11 @@ function install_lr-mame2003() {
 }
 
 function configure_lr-mame2003() {
+    # remove old core library
+    rm -f "$md_inst/mame078_libretro.so"
+
     mkRomDir "mame-libretro"
     ensureSystemretroconfig "mame-libretro"
 
-    addSystem 1 "$md_id" "mame-libretro arcade mame" "$md_inst/mame078_libretro.so"
+    addSystem 1 "$md_id" "mame-libretro arcade mame" "$md_inst/mame2003_libretro.so"
 }

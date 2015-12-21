@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -109,7 +110,7 @@ function configure_uae4all() {
     cat > "$romdir/amiga/+Start UAE4All.sh" << _EOF_
 #!/bin/bash
 pushd "$md_inst"
-$rootdir/supplementary/runcommand/runcommand.sh 0 ./uae4all "$md_id"
+./uae4all
 popd
 _EOF_
     chmod a+x "$romdir/amiga/+Start UAE4All.sh"

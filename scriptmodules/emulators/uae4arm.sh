@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
 #
 
 rp_module_id="uae4arm"
-rp_module_desc="Amiga emulator RPI2 with JIT support"
-rp_module_menus="4+"
+rp_module_desc="Amiga emulator with JIT support"
+rp_module_menus="2+"
 
 function depends_uae4arm() {
-    getDepends libsdl1.2-dev libsdl-mixer1.2-dev libsdl-image1.2-dev libsdl-gfx1.2-dev libsdl-ttf2.0-dev libguichan-dev
+    getDepends libsdl1.2-dev libsdl-gfx1.2-dev libsdl-ttf2.0-dev libguichan-dev
 }
 
 function sources_uae4arm() {
@@ -21,7 +22,11 @@ function sources_uae4arm() {
 }
 
 function build_uae4arm() {
-    make
+    if isPlatform "rpi"; then
+        make PLATFORM=rpi1 CPU_FLAGS=""
+    else
+        make PLATFORM=rpi2 CPU_FLAGS="-mfpu=neon"
+    fi
     md_ret_require="$md_build/uae4arm"
 }
 
@@ -49,7 +54,7 @@ function configure_uae4arm() {
     cat > "$romdir/amiga/+Start UAE4Arm.sh" << _EOF_
 #!/bin/bash
 pushd "$md_inst"
-$rootdir/supplementary/runcommand/runcommand.sh 0 ./uae4arm "$md_id"
+./uae4arm
 popd
 _EOF_
     chmod a+x "$romdir/amiga/+Start UAE4Arm.sh"

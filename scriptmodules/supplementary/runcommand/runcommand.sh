@@ -1,4 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# This file is part of The RetroPie Project
+# 
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
+# 
+# See the LICENSE.md file at the top-level directory of this distribution and 
+# at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
+#
 
 # parameters - mode_req command_to_launch savename
 
@@ -30,6 +39,8 @@ apps_conf="$configdir/all/emulators.cfg"
 dispmanx_conf="$configdir/all/dispmanx.cfg"
 retronetplay_conf="$configdir/all/retronetplay.cfg"
 
+tvservice="/opt/vc/bin/tvservice"
+
 declare -A mode_map
 declare -A mode
 
@@ -41,6 +52,8 @@ mode_map[4-CEA-4:3]="DMT-16"
 mode_map[4-DMT-4:3]="DMT-16"
 mode_map[4-CEA-16:9]="CEA-4"
 
+source "$rootdir/lib/inifuncs.sh"
+
 function get_params() {
     mode_req="$1"
     [[ -z "$mode_req" ]] && exit 1
@@ -50,8 +63,17 @@ function get_params() {
 
     # if the command is _SYS_, arg 3 should be system name, and arg 4 rom/game, and we look up the configured system for that combination
     if [[ "$command" == "_SYS_" ]]; then
-        is_sys=1
-        get_sys_command "$3" "$4"
+        # if the rom is actually a special +Start System.sh script, we should launch the script directly.
+        if [[ "$4" =~ \/\+Start\ (.+)\.sh$ ]]; then
+            # extract emulator from the name (and lowercase it)
+            emulator=${BASH_REMATCH[1],,}
+            is_sys=0
+            command="\"$4\""
+            system="$3"
+        else
+            is_sys=1
+            get_sys_command "$3" "$4"
+        fi
     else
         is_sys=0
         emulator="$3"
@@ -84,7 +106,7 @@ function get_all_modes() {
                 mode_id+=($group-$id)
                 mode[$group-$id]="$info"
             fi
-        done < <(tvservice -m $group)
+        done < <($tvservice -m $group)
     done
     local aspect
     for group in "NTSC" "PAL"; do
@@ -132,7 +154,7 @@ function load_mode_defaults() {
 
     if [[ $has_tvs -eq 1 ]]; then
         # get current mode / aspect ratio
-        mode_orig=($(get_mode_info "$(tvservice -s)"))
+        mode_orig=($(get_mode_info "$($tvservice -s)"))
         mode_new=("${mode_orig[@]}")
 
         # get default mode for requested mode of 1 or 4
@@ -158,32 +180,33 @@ function load_mode_defaults() {
 
     if [[ -f "$video_conf" ]]; then
         # local default video modes for emulator / rom
-        iniGet "$save_emu" "$video_conf"
+        iniConfig "=" '"' "$video_conf"
+        iniGet "$save_emu"
         if [[ -n "$ini_value" ]]; then
             mode_def_emu="$ini_value"
             mode_new_id="$mode_def_emu"
         fi
 
-        iniGet "$save_rom" "$video_conf"
+        iniGet "$save_rom"
         if [[ -n "$ini_value" ]]; then
             mode_def_rom="$ini_value"
             mode_new_id="$mode_def_rom"
         fi
 
         # load default framebuffer res for emulator / rom
-        iniGet "$fb_save_emu" "$video_conf"
+        iniGet "$fb_save_emu"
         if [[ -n "$ini_value" ]]; then
             fb_def_emu="$ini_value"
             fb_new="$fb_def_emu"
         fi
 
-        iniGet "$fb_save_rom" "$video_conf"
+        iniGet "$fb_save_rom"
         if [[ -n "$ini_value" ]]; then
             fb_def_rom="$ini_value"
             fb_new="$fb_def_rom"
         fi
 
-        iniGet "$save_emu_render" "$video_conf"
+        iniGet "$save_emu_render"
         if [[ -n "$ini_value" ]]; then
             render_res="$ini_value"
         fi
@@ -325,7 +348,8 @@ function choose_mode() {
     mode_new_id=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
     [[ -z "$mode_new_id" ]] && return
 
-    iniSet set "=" '"' "$save" "$mode_new_id" "$video_conf"
+    iniConfig "=" '"' "$video_conf"
+    iniSet "$save" "$mode_new_id"
 }
 
 function choose_app() {
@@ -359,9 +383,11 @@ function choose_app() {
     local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
     if [[ -n "$choice" ]]; then
         if [[ -n "$save" ]]; then
-            iniSet set "=" '"' "$save" "${apps[$choice]}" "$apps_conf"
+            iniConfig "=" '"' "$apps_conf"
+            iniSet "$save" "${apps[$choice]}"
         else
-            iniSet set "=" '"' "default" "${apps[$choice]}" "$configdir/$system/emulators.cfg"
+            iniConfig "=" '"' "$configdir/$system/emulators.cfg"
+            iniSet "default" "${apps[$choice]}"
         fi
         get_sys_command "$system" "$rom"
     fi
@@ -399,7 +425,8 @@ function choose_render_res() {
             ;;
     esac
 
-    iniSet set "=" '"' "$save" "$render_res" "$video_conf"
+    iniConfig "=" '"' "$video_conf"
+    iniSet "$save" "$render_res"
 }
 
 function choose_fb_res() {
@@ -427,7 +454,8 @@ function choose_fb_res() {
             ;;
     esac
 
-    iniSet set "=" '"' "$save" "$fb_res" "$video_conf"
+    iniConfig "=" '"' "$video_conf"
+    iniSet "$save" "$fb_res"
 }
 
 function switch_fb_res() {
@@ -453,12 +481,12 @@ function switch_mode() {
 
     local switched=0
     if [[ "${mode_id[0]}" == "PAL" ]] || [[ "${mode_id[0]}" == "NTSC" ]]; then
-        tvservice -c "${mode_id[*]}"
+        $tvservice -c "${mode_id[*]}"
         switched=1
     else
-        local has_mode=$(tvservice -m ${mode_id[0]} | grep -w "mode ${mode_id[1]}")
+        local has_mode=$($tvservice -m ${mode_id[0]} | grep -w "mode ${mode_id[1]}")
         if [[ -n "${mode_id[*]}" ]] && [[ -n "$has_mode" ]]; then
-            tvservice -e "${mode_id[*]}"
+            $tvservice -e "${mode_id[*]}"
             switched=1
         fi
     fi
@@ -466,7 +494,7 @@ function switch_mode() {
     # if we have switched mode, switch the framebuffer resolution also
     if [[ $switched -eq 1 ]]; then
         sleep 1
-        mode_new=($(get_mode_info "$(tvservice -s)"))
+        mode_new=($(get_mode_info "$($tvservice -s)"))
         [[ -z "$fb_new" ]] && fb_new="${mode_new[2]}x${mode_new[3]}"
     fi
 
@@ -476,9 +504,9 @@ function switch_mode() {
 function restore_mode() {
     local mode=(${1/-/ })
     if [[ "${mode[0]}" == "PAL" ]] || [[ "${mode[0]}" == "NTSC" ]]; then
-        tvservice -c "${mode[*]}"
+        $tvservice -c "${mode[*]}"
     else
-        tvservice -p
+        $tvservice -p
     fi
 }
 
@@ -492,7 +520,8 @@ function config_dispmanx() {
     # if we have a dispmanx conf file and $name is in it (as a variable) and set to 1,
     # change the library path to load dispmanx sdl first
     if [[ -f "$dispmanx_conf" ]]; then
-        iniGet "$name" "$dispmanx_conf"
+        iniConfig "=" '"' "$dispmanx_conf"
+        iniGet "$name"
         [[ "$ini_value" == "1" ]] && command="SDL1_VIDEODRIVER=dispmanx $command"
     fi
 }
@@ -540,43 +569,6 @@ function retroarch_append_config() {
     fi
 }
 
-# arg 1: set/unset, arg 2: delimiter, arg 3: quote character, arg 4: key, arg 5: value, arg 6: file
-function iniSet() {
-    local command="$1"
-    local delim="$2"
-    local quote="$3"
-    local key="$4"
-    local value="$5"
-    local file="$6"
-
-    local delim_strip=${delim// /}
-    local match_re="[[:space:]#]*$key[[:space:]]*$delim_strip.*$"
-
-    local match
-    if [[ -f "$file" ]]; then
-        match=$(egrep -i "$match_re" "$file" | tail -1)
-    else
-        touch "$file"
-    fi
-
-    [[ "$command" == "unset" ]] && key="# $key"
-    local replace="$key$delim$quote$value$quote"
-    if [[ -z "$match" ]]; then
-        # add key-value pair
-        echo "$replace" >> "$file"
-    else
-        # replace existing key-value pair
-        sed -i -e "s|$match|$replace|g" "$file"
-    fi
-}
-
-# arg 1: key, arg 2: file - value ends up in ini_value variable
-function iniGet() {
-    local key="$1"
-    local file="$2"
-    ini_value=$(sed -rn "s|^[[:space:]]*$key[[:space:]]*=[[:space:]]*\"?([^\"]+)\"?.*|\1|p" $file)
-}
-
 function set_governor() {
     governor_old=()
     for cpu in /sys/devices/system/cpu/cpu[0-9]*/cpufreq/scaling_governor; do
@@ -606,7 +598,8 @@ function get_sys_command() {
         exit 1
     fi
 
-    iniGet "default" "$emu_conf"
+    iniConfig "=" '"' "$emu_conf"
+    iniGet "default"
     if [[ -z "$ini_value" ]]; then
         echo "No default emulator found for system $system"
         choose_app
@@ -619,13 +612,15 @@ function get_sys_command() {
 
     # get system & rom specific app if set
     if [[ -f "$apps_conf" ]]; then
-        iniGet "$appsave" "$apps_conf"
+        iniConfig "=" '"' "$apps_conf"
+        iniGet "$appsave"
         emulator_def_rom="$ini_value"
         [[ -n "$ini_value" ]] && emulator="$ini_value"
     fi
 
     # get the app commandline
-    iniGet "$emulator" "$emu_conf"
+    iniConfig "=" '"' "$emu_conf"
+    iniGet "$emulator"
     command="$ini_value"
 
     # replace tokens
@@ -634,11 +629,12 @@ function get_sys_command() {
 }
 
 if [[ -f "$runcommand_conf" ]]; then
-    iniGet "governor" "$runcommand_conf"
+    iniConfig "=" '"' "$runcommand_conf"
+    iniGet "governor"
     governor="$ini_value"
 fi
 
-if [[ -n "$(which tvservice)" ]]; then
+if [[ -f "$tvservice" ]]; then
     has_tvs=1
 else
     has_tvs=0

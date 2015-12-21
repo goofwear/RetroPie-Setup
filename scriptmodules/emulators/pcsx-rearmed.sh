@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -54,7 +55,7 @@ function install_pcsx-rearmed() {
 function configure_pcsx-rearmed() {
     mkRomDir "psx"
     mkUserDir "$configdir/psx"
-    mkdir "$md_inst/bios"
+    mkdir -p "$md_inst/bios"
 
     # symlink the rom so so it can be installed with the other bios files
     ln -sf "$biosdir/scph1001.bin" "$md_inst/bios/scph1001.bin"

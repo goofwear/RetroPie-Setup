@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -11,12 +12,6 @@
 rp_module_id="dxx-rebirth"
 rp_module_desc="DXX-Rebirth (Descent & Descent 2) build from source"
 rp_module_menus="4+"
-
-D1X_SHARE_URL='http://www.dxx-rebirth.com/download/dxx/content/descent-pc-shareware.zip'
-D2X_SHARE_URL='http://www.dxx-rebirth.com/download/dxx/content/descent2-pc-demo.zip'
-D1X_HIGH_TEXTURE_URL='http://www.dxx-rebirth.com/download/dxx/res/d1xr-hires.dxa'
-D1X_OGG_URL='http://www.dxx-rebirth.com/download/dxx/res/d1xr-sc55-music.dxa'
-D2X_OGG_URL='http://www.dxx-rebirth.com/download/dxx/res/d2xr-sc55-music.dxa'
 
 function depends_dxx-rebirth() {
     getDepends libphysfs1 libphysfs-dev libsdl1.2-dev libsdl-mixer1.2-dev scons
@@ -30,9 +25,9 @@ function sources_dxx-rebirth() {
 function build_dxx-rebirth() {
     scons -c
     if [[ "$__default_gcc_version" == "4.7" ]]; then
-        scons -Q raspberrypi=1 debug=1 CXX="g++-4.8" CC="gcc-4.8"
+        scons raspberrypi=1 debug=1 CXX="g++-4.8"
     else
-        scons -Q raspberrypi=1 debug=1
+        scons raspberrypi=1 debug=1
     fi
     md_ret_require=(
         "$md_build/d1x-rebirth/d1x-rebirth"
@@ -67,17 +62,19 @@ function install_dxx-rebirth() {
 }
 
 function configure_dxx-rebirth() {
+    local D1X_SHARE_URL='http://www.dxx-rebirth.com/download/dxx/content/descent-pc-shareware.zip'
+    local D2X_SHARE_URL='http://www.dxx-rebirth.com/download/dxx/content/descent2-pc-demo.zip'
+    local D1X_HIGH_TEXTURE_URL='http://www.dxx-rebirth.com/download/dxx/res/d1xr-hires.dxa'
+    local D1X_OGG_URL='http://www.dxx-rebirth.com/download/dxx/res/d1xr-sc55-music.dxa'
+    local D2X_OGG_URL='http://www.dxx-rebirth.com/download/dxx/res/d2xr-sc55-music.dxa'
+
+    mkRomDir "ports"
+
     # Descent 1
     mkRomDir "ports/descent1"
-    mkUserDir "$configdir/descent1"
     
     # copy any existing configs from ~/.d1x-rebirth and symlink the config folder to $configdir/descent1/
-    if [[ -d "$home/.d1x-rebirth" && ! -h "$home/.d1x-rebirth" ]]; then
-        mv -v "$home/.d1x-rebirth/"* "$configdir/descent1/"
-        rm -rf "$home/.d1x-rebirth"
-    fi
-    
-    ln -snf "$configdir/descent1" "$home/.d1x-rebirth"
+    moveConfigDir "$home/.d1x-rebirth" "$configdir/descent1/"
     
     # Download / unpack / install Descent shareware files
     if [[ ! -f "$romdir/ports/descent1/descent.hog" ]]; then
@@ -98,27 +95,13 @@ function configure_dxx-rebirth() {
 
     chown -R $user:$user "$romdir/ports/descent1"
 
-    # Create startup script
-    cat > "$romdir/ports/Descent Rebirth.sh" << _EOF_
-#!/bin/bash
-$md_inst/d1x-rebirth -hogdir $romdir/ports/descent1
-_EOF_
-    
-    # Set startup script permissions
-    chmod u+x "$romdir/ports/Descent Rebirth.sh"
-    chown $user:$user "$romdir/ports/Descent Rebirth.sh"
+    addPort "$md_id" "descent1" "Descent Rebirth" "$md_inst/d1x-rebirth -hogdir $romdir/ports/descent1"
     
     # Descent 2
     mkRomDir "ports/descent2"
-    mkUserDir "$configdir/descent2"
     
     # copy any existing configs from ~/.d2x-rebirth and symlink the config folder to $configdir/descent2/
-    if [[ -d "$home/.d2x-rebirth" && ! -h "$home/.d2x-rebirth" ]]; then
-        mv -v "$home/.d2x-rebirth/"* "$configdir/descent2/"
-        rm -rf "$home/.d2x-rebirth"
-    fi
-    
-    ln -snf "$configdir/descent2" "$home/.d2x-rebirth"
+    moveConfigDir "$home/.d1x-rebirth" "$configdir/descent1/"
     
     # Download / unpack / install Descent 2 shareware files
     if [[ ! -f "$romdir/ports/descent2/D2DEMO.HOG" ]]; then
@@ -134,16 +117,5 @@ _EOF_
 
     chown -R $user:$user "$romdir/ports/descent2"
 
-    # Create startup script
-    cat > "$romdir/ports/Descent 2 Rebirth.sh" << _EOF_
-#!/bin/bash
-$md_inst/d2x-rebirth -hogdir $romdir/ports/descent2
-_EOF_
-
-    # Set startup script permissions
-    chmod u+x "$romdir/ports/Descent 2 Rebirth.sh"
-    chown $user:$user "$romdir/ports/Descent 2 Rebirth.sh"
-    
-    # Add descent1 to emulationstation
-    setESSystem 'Ports' 'ports' '~/RetroPie/roms/ports' '.sh .SH' '%ROM%' 'pc' 'ports'
+    addPort "$md_id" "descent2" "Descent 2 Rebirth" "$md_inst/d2x-rebirth -hogdir $romdir/ports/descent2"
 }

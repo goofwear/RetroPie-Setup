@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/petrockblog/RetroPie-Setup/master/LICENSE.md.
@@ -18,7 +19,7 @@ function depends_zesarux() {
 }
 
 function sources_zesarux() {
-    wget -O- -q "http://downloads.petrockblock.com/retropiearchives/ZEsarUX_src-3.0.tar.gz" | tar -xvz --strip-components=1
+    wget -O- -q "$__archive_url/ZEsarUX_src-3.0.tar.gz" | tar -xvz --strip-components=1
 }
 
 function build_zesarux() {
@@ -52,9 +53,9 @@ _EOF_
     chmod +x "$romdir/zxspectrum/+Start ZEsarUX.sh"
     chown $user:$user "$romdir/zxspectrum/+Start ZEsarUX.sh"
 
-    ln -sf "$configdir/zxspectrum/.zesaruxrc" "$home/.zesaruxrc"
-
-    cat > "$configdir/zxspectrum/.zesaruxrc" << _EOF_
+    moveConfigFile "$home/.zesaruxrc" "$configdir/zxspectrum/.zesaruxrc"
+    if [[ ! -f "$configdir/zxspectrum/.zesaruxrc" ]]; then
+        cat > "$configdir/zxspectrum/.zesaruxrc" << _EOF_
 ;ZEsarUX sample configuration file
 ;
 ;Lines beginning with ; or # are ignored
@@ -73,8 +74,8 @@ _EOF_
 ;Remap Fire Event. Uncomment and amend if you wish to change the default button 3.
 ;--joystickevent 3 Fire
 _EOF_
-
-    chown $user:$user "$configdir/zxspectrum/.zesaruxrc"
+        chown $user:$user "$configdir/zxspectrum/.zesaruxrc"
+    fi
 
     setDispmanx "$md_id" 1
 

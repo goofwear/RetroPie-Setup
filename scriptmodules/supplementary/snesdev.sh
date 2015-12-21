@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -18,8 +19,7 @@ function sources_snesdev() {
 }
 
 function build_snesdev() {
-    make clean
-    make
+    make -j1
     md_ret_require="$md_build/src/SNESDev"
 }
 
@@ -40,15 +40,11 @@ function install_snesdev() {
     popd
 }
 
-function install_bin_snesdev() {
-    rp_callModule snesdev install
-}
-
 function sup_checkInstallSNESDev() {
-    if [[ ! -d "$md_inst" ]]; then
-        sources_snesdev
-        build_snesdev
-        install_snesdev
+    if [[ ! -f "$md_inst/src/SNESDev" ]]; then
+        rp_callModule snesdev sources
+        rp_callModule snesdev build
+        rp_callModule snesdev install
     fi
 }
 
@@ -93,7 +89,7 @@ function sup_snesdevAdapterversion() {
 }
 
 function configure_snesdev() {
-    cmd=(dialog --backtitle "$__backtitle" --menu "Choose the desired boot behaviour." 22 86 16)
+    cmd=(dialog --backtitle "$__backtitle" --menu "Choose an option." 22 86 16)
     options=(
         1 "Disable SNESDev on boot and SNESDev keyboard mapping."
         2 "Enable SNESDev on boot and SNESDev keyboard mapping (polling pads and button)."
@@ -137,7 +133,5 @@ function configure_snesdev() {
                 printMsgs "dialog" "Switched to adapter version 2.X."
                 ;;
         esac
-    else
-        break
     fi
 }

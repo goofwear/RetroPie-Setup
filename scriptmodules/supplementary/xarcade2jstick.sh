@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -36,7 +37,7 @@ function sup_checkInstallXarcade2Jstick() {
 }
 
 function configure_xarcade2jstick() {
-    cmd=(dialog --backtitle "$__backtitle" --menu "Choose the desired boot behaviour." 22 86 16)
+    cmd=(dialog --backtitle "$__backtitle" --menu "Choose an option." 22 86 16)
     options=(
         1 "Disable Xarcade2Jstick service."
         2 "Enable Xarcade2Jstick service."

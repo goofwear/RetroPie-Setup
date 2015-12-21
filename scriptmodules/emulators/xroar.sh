@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -14,15 +15,8 @@ rp_module_menus="2+"
 
 function depends_xroar() {
     getDepends libsdl1.2-dev libraspberrypi-dev
-    # ilclient is part of libraspberrypi-doc, but not included on all distros - eg OSMC on rpi2
-    if hasPackage rbp-bootloader-osmc; then
-        if [[ ! -d "/opt/vc/src/hello_pi" ]]; then
-            mkdir -p "/opt/vc/src"
-            wget -q -O- "http://downloads.petrockblock.com/retropiearchives/hello_pi.tar.gz" | tar -xvz -C "/opt/vc/src"
-        fi
-    else
-        getDepends libraspberrypi-doc
-    fi
+    # ilclient is part of libraspberrypi-doc, but not included on all distros
+    if hasPackage rbp-bootloader-osmc; then getDepends rbp-userland-src-osmc; else getDepends libraspberrypi-doc; fi
 }
 
 function sources_xroar() {

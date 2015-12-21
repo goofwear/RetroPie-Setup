@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -18,9 +19,9 @@ function depends_fuse() {
 }
 
 function sources_fuse() {
-    wget -O- -q http://downloads.petrockblock.com/retropiearchives/fuse-1.1.1.tar.gz | tar -xvz --strip-components=1  
+    wget -O- -q $__archive_url/fuse-1.1.1.tar.gz | tar -xvz --strip-components=1  
     mkdir libspectrum
-    wget -O- -q http://downloads.petrockblock.com/retropiearchives/libspectrum-1.1.1.tar.gz | tar -xvz --strip-components=1 -C libspectrum
+    wget -O- -q $__archive_url/libspectrum-1.1.1.tar.gz | tar -xvz --strip-components=1 -C libspectrum
     patch -p1 <<\_EOF_
 --- a/ui/sdl/sdldisplay.c	2015-02-18 22:39:05.631516602 +0000
 +++ b/ui/sdl/sdldisplay.c	2015-02-18 22:39:08.407506296 +0000
@@ -59,12 +60,8 @@ function configure_fuse() {
     mkRomDir "zxspectrum"
 
     mkUserDir "$configdir/zxspectrum"
-    if [[ -f "$home/.fuserc" && ! -h "$home/.fuserc" ]]; then
-        mv "$home/.fuserc" "$configdir/zxspectrum/"
-    fi
-    rm -f "$home/.fuserc"
-    ln -sf "$configdir/zxspectrum/.fuserc" "$home/.fuserc"
-    chown -R $user:$user "$configdir/zxspectrum"
+
+    moveConfigFile "$home/.fuserc" "$configdir/zxspectrum/.fuserc"
 
     setDispmanx "$md_id" 1
     configure_dispmanx_on_fuse

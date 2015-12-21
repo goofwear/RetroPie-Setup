@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -15,9 +16,20 @@ rp_module_flags="nobin"
 
 function common_configedit() {
     local config="$1"
-    
+
+    # create a list of all present shader presets
+    local shader
+    local video_shader="video_shader "
+    for shader in /opt/retropie/emulators/retroarch/shader/*.glslp; do
+        # Do not add presets with whitespace
+        if [[ "$shader" != *" "* ]]; then
+            video_shader+="$shader "
+        fi
+    done
+
     # key + values
     local common=(
+        'video_driver gl dispmanx sdl2 vg'
         'video_fullscreen_x _string_'
         'video_fullscreen_y _string_'
         'video_threaded true false'
@@ -27,10 +39,22 @@ function common_configedit() {
         'video_aspect_ratio _string_'
         'video_aspect_ratio_auto true false'
         'video_shader_enable true false'
+        "$video_shader"
         'video_rotation _string_'
+        'fps_show true false'
+        'input_joypad_driver udev sdl2 linuxraw'
+        'input_player1_analog_dpad_mode 0 1 2'
+        'input_player2_analog_dpad_mode 0 1 2'
+        'input_player3_analog_dpad_mode 0 1 2'
+        'input_player4_analog_dpad_mode 0 1 2'
+        'input_player5_analog_dpad_mode 0 1 2'
+        'input_player6_analog_dpad_mode 0 1 2'
+        'input_player7_analog_dpad_mode 0 1 2'
+        'input_player8_analog_dpad_mode 0 1 2'
     )
     
     local descs=(
+        'Video driver to use (default is gl)'
         'Fullscreen resolution. Resolution of 0 uses the resolution of the desktop.'
         'Fullscreen resolution. Resolution of 0 uses the resolution of the desktop.'
         'Use threaded video driver. Using this might improve performance at possible cost of latency and more video stuttering.'
@@ -38,9 +62,20 @@ function common_configedit() {
         'Forces rendering area to stay equal to content aspect ratio or as defined in video_aspect_ratio.'
         'Only scales video in integer steps. The base size depends on system-reported geometry and aspect ratio. If video_force_aspect is not set, X/Y will be integer scaled independently.'
         'Load video_shader on startup. Other shaders can still be loaded later in runtime.'
+        'Video shader to use (default none)'
         'A floating point value for video aspect ratio (width / height). If this is not set, aspect ratio is assumed to be automatic. Behavior then is defined by video_aspect_ratio_auto.'
         'If this is true and video_aspect_ratio is not set, aspect ratio is decided by libretro implementation. If this is false, 1:1 PAR will always be assumed if video_aspect_ratio is not set.'
         'Forces a certain rotation of the screen. The rotation is added to rotations which the libretro core sets (see video_allow_rotate). The angle is <value> * 90 degrees counter-clockwise.'
+        'Show current frames per second.'
+        'Input joypad driver to use (default is udev)'
+        'Allow analogue sticks to be used as a d-pad - 0 = disabled, 1 = left stick, 2 = right stick'
+        'Allow analogue sticks to be used as a d-pad - 0 = disabled, 1 = left stick, 2 = right stick'
+        'Allow analogue sticks to be used as a d-pad - 0 = disabled, 1 = left stick, 2 = right stick'
+        'Allow analogue sticks to be used as a d-pad - 0 = disabled, 1 = left stick, 2 = right stick'
+        'Allow analogue sticks to be used as a d-pad - 0 = disabled, 1 = left stick, 2 = right stick'
+        'Allow analogue sticks to be used as a d-pad - 0 = disabled, 1 = left stick, 2 = right stick'
+        'Allow analogue sticks to be used as a d-pad - 0 = disabled, 1 = left stick, 2 = right stick'
+        'Allow analogue sticks to be used as a d-pad - 0 = disabled, 1 = left stick, 2 = right stick'
     )
 
     [[ ! -f "$config" ]] && return
@@ -88,7 +123,7 @@ function common_configedit() {
             options+=("U" "unset")
 
             # display values
-            cmd=(dialog --backtitle "$__backtitle" --default-item "$default" --menu "Please choose the value for " 12 40 06)
+            cmd=(dialog --backtitle "$__backtitle" --default-item "$default" --menu "Please choose the value for " 12 76 06)
             local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
 
             # if it is a _string_ type we will open an inputbox dialog to get a manual value

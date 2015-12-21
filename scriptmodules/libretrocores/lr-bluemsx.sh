@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -13,7 +14,7 @@ rp_module_desc="MSX/MSX2 emu - blueMSX port for libretro"
 rp_module_menus="2+"
 
 function sources_lr-bluemsx() {
-    gitPullOrClone "$md_build" https://github.com/HerbFargus/blueMSX-libretro.git
+    gitPullOrClone "$md_build" https://github.com/libretro/blueMSX-libretro.git
 }
 
 function build_lr-bluemsx() {
@@ -38,8 +39,7 @@ function configure_lr-bluemsx() {
     cp -rv "$md_inst/"{Databases,Machines} "$biosdir/"
     chown -R $user:$user "$biosdir/"{Databases,Machines}
 
-    # default to MSX2+ core
-    setRetroArchCoreOption "bluemsx_msxtype" "MSX2+"
+    wget -q -O- "$__archive_url/bluemsxroms.tar.gz" | tar -xvz -C "$biosdir/Machines/Shared Roms/"
 
     addSystem 1 "$md_id" "msx" "$md_inst/bluemsx_libretro.so"
 }

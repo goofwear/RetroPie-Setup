@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -22,7 +23,7 @@ function depends_vice() {
 }
 
 function sources_vice() {
-    wget -O- -q http://downloads.petrockblock.com/retropiearchives/vice-2.4.tar.gz | tar -xvz --strip-components=1
+    wget -O- -q $__archive_url/vice-2.4.tar.gz | tar -xvz --strip-components=1
 }
 
 function build_vice() {
@@ -38,15 +39,8 @@ function install_vice() {
 function configure_vice() {
     mkRomDir "c64"
 
-    mkUserDir "$configdir/c64"
-
     # copy any existing configs from ~/.vice and symlink the config folder to $configdir/c64/
-    if [[ -d "$home/.vice" && ! -h "$home/.vice" ]]; then
-        mv -v "$home/.vice/"* "$configdir/c64/"
-        rm -rf "$home/.vice"
-    fi
-
-    ln -snf "$configdir/c64" "$home/.vice"
+    moveConfigDir "$home/.vice" "$configdir/c64"
 
     # if we have an old config vice.cfg then move it to sdl-vicerc
     if [[ -f "$configdir/c64/vice.cfg" ]]; then

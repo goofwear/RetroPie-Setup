@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -27,23 +28,27 @@ function depends_sdl1() {
 }
 
 function sources_sdl1() {
-    local src="deb-src http://ftp.debian.org/debian $__raspbian_name main"
-    echo "$src" >"/etc/apt/sources.list.d/src.list"
-    apt-get update
-    apt-get source -y --allow-unauthenticated libsdl1.2-dev
-    rm "/etc/apt/sources.list.d/src.list"
+    local file
+    for file in libsdl1.2_1.2.15.orig.tar.gz libsdl1.2_1.2.15-10.dsc libsdl1.2_1.2.15-10.debian.tar.xz; do
+        wget -q -O "$file" "http://ftp.debian.org/debian/pool/main/libs/libsdl1.2/$file"
+    done
+    dpkg-source -x libsdl1.2_1.2.15-10.dsc
+
     cd libsdl1.2-1.2.15
-    
     # add fixes from https://github.com/RetroPie/sdl1/compare/master...rpi
     wget https://github.com/RetroPie/sdl1/compare/master...rpi.diff -O debian/patches/rpi.diff
     echo "rpi.diff" >>debian/patches/series
+    # force building without tslib on Jessie (as Raspbian Jessie as tslib, but Debian Jessie doesn't and we want cross compatibility
+    if [[ "$__raspbian_ver" -gt "7" ]]; then
+        sed -i "s/--enable-video-caca/--enable-video-caca --disable-input-tslib/" debian/rules
+    fi
     DEBEMAIL="Jools Wills <buzz@exotica.org.uk>" dch -v 1.2.15-$(get_ver_sdl1)rpi "Added rpi fixes and dispmanx support from https://github.com/RetroPie/sdl1/compare/master...rpi"
 }
 
 function build_sdl1() {
     cd libsdl1.2-1.2.15
     dpkg-buildpackage
-    local dest="$__tmpdir/archives/$__platform"
+    local dest="$__tmpdir/archives/$__raspbian_name/$__platform"
     mkdir -p "$dest"
     cp ../*.deb "$dest/"
 }

@@ -1,8 +1,9 @@
 #!/bin/bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -15,7 +16,7 @@ function printMsgs() {
         type="console"
     fi
     for msg in "$@"; do
-        [[ "$type" == "dialog" ]] && dialog --backtitle "$__backtitle" --msgbox "$msg" 20 60 >/dev/tty
+        [[ "$type" == "dialog" ]] && dialog --backtitle "$__backtitle" --cr-wrap --no-collapse --msgbox "$msg" 20 60 >/dev/tty
         [[ "$type" == "console" ]] && echo -e "$msg"
         [[ "$type" == "heading" ]] && echo -e "\n= = = = = = = = = = = = = = = = = = = = =\n$msg\n= = = = = = = = = = = = = = = = = = = = =\n"
     done
@@ -71,91 +72,6 @@ function addLineToFile() {
     sed -i -e '$a\' "$2"
     echo "$1" >> "$2"
     echo "Added $1 to file $2"
-}
-
-# arg 1: delimiter, arg 2: quote, arg 3: file
-function iniConfig() {
-    __ini_cfg_delim="$1"
-    __ini_cfg_quote="$2"
-    __ini_cfg_file="$3"
-}
-
-# arg 1: command, arg 2: key, arg 2: value, arg 3: file (optional - uses file from iniConfig if not used)
-function iniProcess() {
-    local cmd="$1"
-    local key="$2"
-    local value="$3"
-    local file="$4"
-    [[ -z "$file" ]] && file="$__ini_cfg_file"
-    local delim="$__ini_cfg_delim"
-    local quote="$__ini_cfg_quote"
-
-    [[ -z "$file" ]] && fatalError "No file provided for ini/config change"
-    [[ -z "$key" ]] && fatalError "No key provided for ini/config change on $file"
-
-    # we strip the delimiter of spaces, so we can "fussy" match existing entries that have the wrong spacing
-    local delim_strip=${delim// /}
-    # if the stripped delimiter is empty - such as in the case of a space, just use the delimiter instead
-    [[ -z "$delim_strip" ]] && delim_strip="$delim"
-    local match_re="^[[:space:]#]*$key[[:space:]]*$delim_strip.*$"
-
-    local match
-    if [[ -f "$file" ]]; then
-        match=$(egrep -i "$match_re" "$file" | tail -1)
-    else
-        touch "$file"
-    fi
-
-    if [[ "$cmd" == "del" ]]; then
-        [[ -n "$match" ]] && sed -i -e "\|$match|d" "$file"
-        return 0
-    fi
-
-    [[ "$cmd" == "unset" ]] && key="# $key"
-
-    local replace="$key$delim$quote$value$quote"
-    echo "Setting $replace in $file"
-    if [[ -z "$match" ]]; then
-        # add key-value pair
-        echo "$replace" >> "$file"
-    else
-        # replace existing key-value pair
-        sed -i -e "s|$match|$replace|g" "$file"
-    fi
-}
-
-# arg 1: key, arg 2: value, arg 3: file (optional - uses file from iniConfig if not used)
-function iniUnset() {
-    iniProcess "unset" "$1" "$2" "$3"
-}
-
-# arg 1: key, arg 2: value, arg 3: file (optional - uses file from iniConfig if not used)
-function iniSet() {
-    iniProcess "set" "$1" "$2" "$3"
-}
-
-# arg 1: key, arg 2: value, arg 3: file (optional - uses file from iniConfig if not used)
-function iniDel() {
-    iniProcess "del" "$1" "$2" "$3"
-}
-
-# arg 1: key, arg 2: file (optional - uses file from iniConfig if not used)
-# value ends up in ini_value variable
-function iniGet() {
-    local key="$1"
-    local file="$2"
-    [[ -z "$file" ]] && file="$__ini_cfg_file"
-    if [[ ! -f "$file" ]]; then
-        ini_value=""
-        return 1
-    fi
-    local delim="$__ini_cfg_delim"
-    local quote="$__ini_cfg_quote"
-    # we strip the delimiter of spaces, so we can "fussy" match existing entries that have the wrong spacing
-    local delim_strip=${delim// /}
-    # if the stripped delimiter is empty - such as in the case of a space, just use the delimiter instead
-    [[ -z "$delim_strip" ]] && delim_strip="$delim"
-    ini_value=$(sed -rn "s/^[[:space:]]*$key[[:space:]]*$delim_strip[[:space:]]*$quote(.+)$quote.*/\1/p" $file)
 }
 
 function editFile() {
@@ -219,13 +135,13 @@ function getDepends() {
             local temp=()
             for required in ${packages[@]}; do
                 if [[ "$required" == "libsdl1.2-dev" ]]; then
-                    if [[ "$__raspbian_ver" -eq "7" ]]; then
+                    if [[ "$__has_binaries" -eq 1 ]]; then
                         rp_callModule sdl1 install_bin
                     else
                         rp_callModule sdl1
                     fi
                 elif [[ "$required" == "libsdl2-dev" ]]; then
-                    if [[ "$__raspbian_ver" -eq "7" ]]; then
+                    if [[ "$__has_binaries" -eq 1 ]]; then
                         rp_callModule sdl2 install_bin
                     else
                         rp_callModule sdl2
@@ -288,7 +204,7 @@ function gitPullOrClone() {
     mkdir -p "$dir"
 
     # to work around a issue with git hanging in a qemu-arm-static chroot we can use a github created archive
-    if [[ $__chroot -eq 1 && "$repo" =~ github && "$md_id" != "lr-picodrive" && "$md_id" != "splashscreen" ]]; then
+    if [[ $__chroot -eq 1 && "$repo" =~ github && ! "$md_id" =~ lr-picodrive|splashscreen|esthemes|ppsspp ]]; then
         local archive=${repo/.git/}
         archive="${archive/git:/https:}/archive/$branch.tar.gz"
         wget -O- -q "$archive" | tar -xvz --strip-components=1 -C "$dir"
@@ -310,6 +226,11 @@ function gitPullOrClone() {
 
 function ensureRootdirExists() {
     mkdir -p "$rootdir"
+    # make sure we have inifuncs.sh in place and that it is up to date
+    mkdir -p "$rootdir/lib"
+    if [[ ! -f "$rootdir/lib/inifuncs.sh" || "$rootdir/lib/inifuncs.sh" -ot "$scriptdir/scriptmodules/inifuncs.sh" ]]; then
+        cp --preserve=timestamps "$scriptdir/scriptmodules/inifuncs.sh" "$rootdir/lib/inifuncs.sh"
+    fi
     mkUserDir "$datadir"
     mkUserDir "$configdir"
     mkUserDir "$configdir/all"
@@ -333,6 +254,37 @@ function mkRomDir() {
         ln -snf "$1" "genesis"
         popd
     fi
+}
+
+function moveConfigDir() {
+    local from="$1"
+    local to="$2"
+    mkUserDir "$to"
+    # move any old configs to the new location
+    if [[ -d "$from" && ! -h "$from" ]]; then
+        # also match hidden files
+        shopt -s dotglob
+        if [[ -n "$(ls -A $from)" ]]; then
+            mv -f "$from/"* "$to"
+        fi
+        shopt -u dotglob
+        rmdir "$from"
+    fi
+    ln -snf "$to" "$from"
+    # set ownership of the actual link to $user
+    chown -h $user:$user "$from"
+}
+
+function moveConfigFile() {
+    local from="$1"
+    local to="$2"
+    # move old file
+    if [[ -f "from" && ! -h "from" ]]; then
+        mv "from" "$to"
+    fi
+    ln -sf "$to" "$from"
+    # set ownership of the actual link to $user
+    chown -h $user:$user "$from"
 }
 
 function setDispmanx() {
@@ -477,6 +429,7 @@ function addSystem() {
     local platform
     local theme
 
+    # set system / platform / theme for configuration based on data in names field
     if [[ -n "${names[2]}" ]]; then
         system="${names[0]}"
         platform="${names[1]}"
@@ -491,41 +444,57 @@ function addSystem() {
         theme="$system"
     fi
 
-    local conf=""
-    if [[ -f "$configdir/all/platforms.cfg" ]]; then
-        conf="$configdir/all/platforms.cfg"
+    # for the ports section, we will handle launching from a separate script and hardcode exts etc
+    local es_cmd="$rootdir/supplementary/runcommand/runcommand.sh 0 _SYS_ $system %ROM%"
+    local es_path="$romdir/$system"
+    local es_name="$system"
+    if [[ "$theme" == "ports" ]]; then
+        es_cmd="%ROM%"
+        es_path="$romdir/ports"
+        es_name="ports"
+        exts=(".sh")
+        fullname="Ports"
     else
-        conf="$scriptdir/platforms.cfg"
-    fi
+        local conf=""
+        if [[ -f "$configdir/all/platforms.cfg" ]]; then
+            conf="$configdir/all/platforms.cfg"
+        else
+            conf="$scriptdir/platforms.cfg"
+        fi
 
-    iniConfig "=" '"' "$conf"
-    iniGet "${system}_fullname"
-    [[ -n "$ini_value" ]] && fullname="$ini_value"
-    iniGet "${system}_exts"
-    [[ -n "$ini_value" ]] && exts+=($ini_value)
+        # get extensions to show
+        iniConfig "=" '"' "$conf"
+        iniGet "${system}_fullname"
+        [[ -n "$ini_value" ]] && fullname="$ini_value"
+        iniGet "${system}_exts"
+        [[ -n "$ini_value" ]] && exts+=($ini_value)
+
+        # automatically add parameters for libretro modules
+        if [[ "$id" =~ ^lr- ]]; then
+            cmd="$emudir/retroarch/bin/retroarch -L $cmd --config $configdir/$system/retroarch.cfg %ROM%"
+        fi
+    fi
 
     exts="${exts[@]}"
     # add the extensions again as uppercase
     exts+=" ${exts^^}"
 
-    # automatically add parameters for libretro modules
-    if [[ "$id" =~ ^lr- ]]; then
-        cmd="$emudir/retroarch/bin/retroarch -L $cmd --config $configdir/$system/retroarch.cfg %ROM%"
-    fi
+    setESSystem "$fullname" "$es_name" "$es_path" "$exts" "$es_cmd" "$platform" "$theme"
 
-    setESSystem "$fullname" "$system" "~/RetroPie/roms/$system" "$exts" "$rootdir/supplementary/runcommand/runcommand.sh 0 _SYS_ $system %ROM%" "$platform" "$theme"
-
+    # create a config folder for the system
     if [[ ! -d "$configdir/$system" ]]; then
-        mkdir "$configdir/$system"
-        chown $user:$user "$configdir/$system"
+        mkUserDir "$configdir/$system"
     fi
 
-    iniConfig "=" '"' "$configdir/$system/emulators.cfg"
-    iniSet "$id" "$cmd"
-    if [[ "$default" == "1" ]]; then
-        iniSet "default" "$id"
+    # add the emulator to the $system/emulators.cfg if a commandline exists (not used for some ports)
+    if [[ -n "$cmd" ]]; then
+        iniConfig "=" '"' "$configdir/$system/emulators.cfg"
+        iniSet "$id" "$cmd"
+        if [[ "$default" == "1" ]]; then
+            iniSet "default" "$id"
+        fi
+        chown $user:$user "$configdir/$system/emulators.cfg"
     fi
-    chown $user:$user "$configdir/$system/emulators.cfg"
 }
 
 function delSystem() {
@@ -538,4 +507,25 @@ function delSystem() {
         iniConfig "=" '"' "$configdir/$system/emulators.cfg"
         iniDel "$id"
     fi
+}
+
+function addPort() {
+    local id="$1"
+    local port="$2"
+    local file="$romdir/ports/$3.sh"
+    local cmd="$4"
+
+    if [ -t 0 ]; then
+        cat >"$file" << _EOF_
+#!/bin/bash
+"$rootdir/supplementary/runcommand/runcommand.sh" 0 _SYS_ $port
+_EOF_
+    else
+        cat >"$file"
+    fi
+
+    chown $user:$user "$file"
+    chmod +x "$file"
+
+    addSystem 1 "$id" "$port pc ports" "$cmd"
 }

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -27,11 +28,6 @@ ExecStart=-/sbin/agetty --autologin $user --noclear %I 38400 linux
 _EOF_
     fi
     cat >/etc/profile.d/10-emulationstation.sh <<_EOF_
-# wait for omxplayer to finish playing startup video (if running)
-while pgrep omxplayer &>/dev/null;
-    do sleep 1;
-done
-
 # launch emulationstation (if we are on the correct tty)
 [ "\`tty\`" = "/dev/tty1" ] && emulationstation
 _EOF_

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -22,11 +23,11 @@ function sources_lr-mame2010() {
 
 function build_lr-mame2010() {
     make clean
-    make -f Makefile.libretro VRENDER=soft ARM_ENABLED=1 ARCHOPTS="$CFLAGS" buildtools
+    make VRENDER=soft ARM_ENABLED=1 ARCHOPTS="$CFLAGS" buildtools
     if [[ "$__default_gcc_version" == "4.7" ]]; then
-        make -f Makefile.libretro VRENDER=soft ARM_ENABLED=1 ARCHOPTS="$CFLAGS" CC="gcc-4.8" CXX="g++-4.8"
+        make VRENDER=soft ARM_ENABLED=1 ARCHOPTS="$CFLAGS" CC="gcc-4.8" CXX="g++-4.8"
     else
-        make -f Makefile.libretro VRENDER=soft ARM_ENABLED=1 ARCHOPTS="$CFLAGS"
+        make VRENDER=soft ARM_ENABLED=1 ARCHOPTS="$CFLAGS"
     fi
 }
 

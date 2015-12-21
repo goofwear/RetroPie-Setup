@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -43,6 +44,8 @@ function setup_env() {
     # set location of binary downloads
     [[ "$__has_binaries" -eq 1 ]] && __binary_url="http://downloads.petrockblock.com/retropiebinaries/$__raspbian_name/$__platform"
 
+    __archive_url="http://downloads.petrockblock.com/retropiearchives"
+
     # -pipe is faster but will use more memory - so let's only add it if we have more thans 256M free ram.
     [[ $__memory_phys -ge 256 ]] && __default_cflags+=" -pipe"
 
@@ -81,8 +84,6 @@ function get_os_version() {
                 8)
                     __raspbian_ver=8
                     __raspbian_name="jessie"
-                    # we don't ship binaries for jessie (yet)
-                    __has_binaries=0
                     return
                     ;;
                 *)

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -37,17 +38,14 @@ function configure_lr-nxengine() {
 
     local msg="You need the original Cave Story game files to use $md_id. Please unpack the game to $romdir/ports/CaveStory so you have the file $romdir/ports/CaveStory/Doukutsu.exe present."
 
-    cat > "$romdir/ports/Cave Story.sh" << _EOF_
+    addPort "$md_id" "cavestory" "Cave Story" "$emudir/retroarch/bin/retroarch -L $md_inst/nxengine_libretro.so --config $configdir/cavestory/retroarch.cfg $romdir/ports/CaveStory/Doukutsu.exe" << _EOF_
 #!/bin/bash
-if [[ -f "$romdir/ports/CaveStory/Doukutsu.exe" ]]; then
-    $rootdir/supplementary/runcommand/runcommand.sh 0 "$emudir/retroarch/bin/retroarch -L $md_inst/nxengine_libretro.so --config $configdir/cavestory/retroarch.cfg $romdir/ports/CaveStory/Doukutsu.exe" "$md_id"
-else
+if [[ ! -f "$romdir/ports/CaveStory/Doukutsu.exe" ]]; then
     dialog --msgbox "$msg" 22 76
+else
+    "$rootdir/supplementary/runcommand/runcommand.sh" 0 _SYS_ cavestory
 fi
 _EOF_
-    chmod +x "$romdir/ports/Cave Story.sh"
-
-    setESSystem 'Ports' 'ports' '~/RetroPie/roms/ports' '.sh .SH' '%ROM%' 'pc' 'ports'
 
     __INFMSGS+=("$msg")
 }

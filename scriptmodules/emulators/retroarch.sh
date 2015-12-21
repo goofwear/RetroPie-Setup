@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -14,6 +15,7 @@ rp_module_menus="2+"
 
 function depends_retroarch() {
     getDepends libudev-dev libxkbcommon-dev libsdl2-dev libraspberrypi-dev
+    [[ "$__raspbian_ver" -ge "8" ]] && getDepends libusb-1.0-0-dev
 
     cat > "/etc/udev/rules.d/99-evdev.rules" << _EOF_
 KERNEL=="event*", NAME="input/%k", MODE="666"
@@ -24,16 +26,15 @@ _EOF_
 function sources_retroarch() {
     gitPullOrClone "$md_build" https://github.com/libretro/RetroArch.git
     gitPullOrClone "$md_build/overlays" https://github.com/libretro/common-overlays.git
-    gitPullOrClone "$md_build/shader" https://github.com/gizmo98/common-shaders.git
-    # disable the search dialog which doesn't work - https://github.com/libretro/RetroArch/issues/1432
-    sed -i 's|menu_input_search_start|//menu_input_search_start|g' $md_build/menu/menu_entry.c
-
+    gitPullOrClone "$md_build/shader" https://github.com/RetroPie/common-shaders.git
+    # disable the search dialog
+    sed -i 's|menu_input_ctl(MENU_INPUT_CTL_SEARCH_START|//menu_input_ctl(MENU_INPUT_CTL_SEARCH_START|g' menu/menu_entry.c
 }
 
 function build_retroarch() {
-    local params=(--disable-x11 --disable-oss --disable-pulse --disable-al --enable-floathard)
+    local params=(--disable-x11 --enable-dispmanx --disable-oss --disable-pulse --disable-al --disable-jack --enable-sdl2 --enable-floathard)
     isPlatform "rpi2" && params+=(--enable-neon)
-    ./configure --prefix="$md_inst" ${params[@]}
+    ./configure --prefix="$md_inst" "${params[@]}"
     make clean
     make
     md_ret_require="$md_build/retroarch"
@@ -112,6 +113,7 @@ function configure_retroarch() {
     iniSet "input_autodetect_enable" "true"
     iniSet "joypad_autoconfig_dir" "$configdir/all/retroarch-joypads/"
     iniSet "auto_remaps_enable" "true"
+    iniSet "input_joypad_driver" "sdl2"
 
     chown $user:$user "$config"
 }

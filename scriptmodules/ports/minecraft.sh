@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -32,11 +33,5 @@ $md_inst/minecraft-pi
 _EOF_
     chmod +x "$md_inst/Minecraft.sh"
 
-    cat > "$romdir/ports/Minecraft.sh" << _EOF_
-#!/bin/bash
-$rootdir/supplementary/runcommand/runcommand.sh 0 "xinit \"$md_inst/Minecraft.sh\"" minecraft
-_EOF_
-    chmod +x "$romdir/ports/Minecraft.sh"
-
-    setESSystem 'Ports' 'ports' '~/RetroPie/roms/ports' '.sh .SH' '%ROM%' 'pc' 'ports'
+    addPort "$md_id" "minecraft" "Minecraft" "xinit \"$md_inst/Minecraft.sh\""
 }

@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
 #
 
 rp_module_id="lr-fba-next"
-rp_module_desc="Arcade emu - Final Burn Alpha (0.2.97.36) port for libretro"
+rp_module_desc="Arcade emu - Final Burn Alpha (0.2.97.37) port for libretro"
 rp_module_menus="2+"
 
 function depends_lr-fba-next() {
@@ -42,7 +43,9 @@ function install_lr-fba-next() {
 
 function configure_lr-fba-next() {
     mkRomDir "fba"
+    mkRomDir "neogeo"
     ensureSystemretroconfig "fba"
+    ensureSystemretroconfig "neogeo"
 
     local def=1
     isPlatform "rpi1" && def=0

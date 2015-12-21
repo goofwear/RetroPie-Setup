@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -45,6 +46,7 @@ function scrape_scraper() {
     params+=(-image_path "$img_path")
     params+=(-output_file "$gamelist")
     params+=(-rom_dir "$romdir/$system")
+    params+=(-workers "4")
     [[ "$system" =~ ^mame- ]] && params+=(-mame -mame_img t,m,s)
     sudo -u $user "$md_inst/scraper" ${params[@]} -thumb_only -skip_check
 }
@@ -86,6 +88,7 @@ function scrape_chosen_scraper() {
 }
 
 function configure_scraper() {
+    printMsgs "dialog" "Before running this scraper, make sure all EmulationStation processes are killed  with \"sudo killall emulationstation\" so that the gamelist.xml is written properly, otherwise the scraper changes may not be saved."
     if [[ ! -d "$md_inst" ]]; then
         rp_callModule "$md_id" install
     fi

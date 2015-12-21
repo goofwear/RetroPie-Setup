@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -20,7 +21,7 @@ function depends_eduke32() {
 }
 
 function sources_eduke32() {
-    wget -O- -q http://downloads.petrockblock.com/retropiearchives/eduke32.tar.gz | tar -xvz --strip-components=1
+    wget -O- -q $__archive_url/eduke32.tar.gz | tar -xvz --strip-components=1
 }
 
 function build_eduke32() {
@@ -30,7 +31,7 @@ function build_eduke32() {
 }
 
 function install_eduke32() {
-    wget http://downloads.petrockblock.com/retropiearchives/3dduke13.zip -O 3dduke13.zip
+    wget $__archive_url/3dduke13.zip -O 3dduke13.zip
     unzip -L -o 3dduke13.zip dn3dsw13.shr
     mkdir -p "$md_inst/shareware"
     unzip -L -o dn3dsw13.shr -d "$md_inst/shareware" duke3d.grp duke.rts
@@ -41,7 +42,10 @@ function install_eduke32() {
 }
 
 function configure_eduke32() {
+    mkRomDir "ports"
     mkRomDir "ports/duke3d"
+
+    moveConfigDir "$home/.eduke32" "$configdir/duke3d"
 
     local file
     local file_bn
@@ -51,11 +55,8 @@ function configure_eduke32() {
         ln -snv "$file" "$romdir/ports/duke3d/$file_bn"
     done
 
-    cat > "$romdir/ports/Duke3D Shareware.sh" << _EOF_
-#!/bin/bash
-$rootdir/supplementary/runcommand/runcommand.sh 0 "$md_inst/eduke32 -j$romdir/ports/duke3d" "$md_id"
-_EOF_
-    chmod +x "$romdir/ports/Duke3D Shareware.sh"
+    # remove old launch script
+    rm -f "$romdir/ports/Duke3D Shareware.sh"
 
-    setESSystem 'Ports' 'ports' '~/RetroPie/roms/ports' '.sh .SH' '%ROM%' 'pc' 'ports' 
+    addPort "$md_id" "duke3d" "Duke Nukem 3D" "$md_inst/eduke32 -j$romdir/ports/duke3d"
 }

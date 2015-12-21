@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This file is part of RetroPie.
+# This file is part of The RetroPie Project
 # 
-# (c) Copyright 2012-2015  Florian Müller (contact@petrockblock.com)
+# The RetroPie Project is the legal property of its developers, whose names are
+# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
 # 
 # See the LICENSE.md file at the top-level directory of this distribution and 
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
@@ -20,7 +21,7 @@ function configure_dispmanx() {
         local options=()
         local command=()
         for idx in "${__mod_idx[@]}"; do
-            [[ $idx -gt 200 ]] && break
+            [[ $idx -gt 250 ]] && break
             if [[ "${__mod_flags[$idx]}" =~ dispmanx ]]; then
                 local mod_id=${__mod_id[idx]}
                 iniGet "$mod_id"
